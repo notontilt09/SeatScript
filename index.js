@@ -18,7 +18,7 @@ const test = async () => {
     await driver.wait(until.elementLocated(By.linkText('Favorites')), 1000).click();
 
     //click on casino
-    await driver.wait(until.elementLocated(By.linkText('Fallsview Casino Resort')), 1000).click();
+    await driver.wait(until.elementLocated(By.linkText('MGM National Harbor Casino Resort')), 1000).click();
 
     //find table of games and see what games current running
     await driver.findElements(By.css('#live-events > div > table > tbody > tr'))

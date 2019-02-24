@@ -8,6 +8,8 @@ const client = require('./send-sms');
 
 const driver = new Builder().forBrowser('chrome').build();
 
+let textBody = '';
+
 const test = async (casino, stakes) => {
     //login
     await driver.get('https://www.bravopokerlive.com/venues');
@@ -41,20 +43,13 @@ const test = async (casino, stakes) => {
                             info = infoArray.join(' ');
                             for (let i = 0; i < stakes.length; i++) {
                                 if (info.includes(stakes[i])) {
-                                    client.messages.create({
-                                        to: process.env.MY_PHONE,
-                                        from: process.env.TWILIO_PHONE,
-                                        body: `${info} at ${casino}`
-                                    })
-                                    .then(message => console.log(message.sid));
+                                    textBody += ' *** ' + info
                                 }
                             }
-                        }
-                        
+                        }  
                     })
             });
-        })
-    
+        });  
     
     // grab wait lists
     await driver.findElements(By.css('#live-events > table > tbody > tr'))
@@ -65,12 +60,36 @@ const test = async (casino, stakes) => {
                         if (text && !text.includes('Current Waiting List')) {
                             const infoArray = text.split(' ');
                             const last = infoArray.pop()
-                            infoArray.unshift(last + ' on the waiting list for');
-                            // console.log(`${infoArray.join(' ')} \n`)
+                            infoArray.unshift(last + ' waiting for');
+                            info = infoArray.join(' ')
+                            for (let i = 0; i < stakes.length; i++) {
+                                if (info.includes(stakes[i])) {
+                                    textBody += ' *** ' + info;
+                                }
+                            }
                         }
                     })
             })
         })
 }
 
-test('MGM National Harbor Casino Resort', ['10-25 NLH']);
+
+
+const run = async () => {
+    await test('MGM National Harbor Casino Resort', ['10-25 NLH', '5-10 NLH']);
+    // setTimeout(() => console.log(textBody), 1000);
+    setTimeout(() => {
+        client.messages.create({
+            to: process.env.MY_PHONE,
+            from: process.env.TWILIO_PHONE,
+            body: `MGM National Harbor Casino Resort INFO: \n ${textBody}`
+        })
+        .then(message => console.log(message.sid));
+    }, 1000); 
+}
+
+run();
+
+
+
+

@@ -1,5 +1,10 @@
+require('dotenv').config();
 const {Builder, By, Key, until} = require('selenium-webdriver');
 require('chromedriver');
+
+// bring in the twilio client from send-sms file
+const client = require('./send-sms');
+
 
 const driver = new Builder().forBrowser('chrome').build();
 

@@ -12,7 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "chromedriver": "^2.46.0",
-    "selenium-webdriver": "^4.0.0-alpha.1"
+    "dotenv": "^6.2.0",
+    "selenium-webdriver": "^4.0.0-alpha.1",
+    "twilio": "^3.28.1"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"

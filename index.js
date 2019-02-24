@@ -8,7 +8,7 @@ const client = require('./send-sms');
 
 const driver = new Builder().forBrowser('chrome').build();
 
-const test = async () => {
+const test = async (casino, stakes) => {
     //login
     await driver.get('https://www.bravopokerlive.com/venues');
     await driver.findElement(By.css('.btn-danger')).click();
@@ -23,9 +23,11 @@ const test = async () => {
     await driver.wait(until.elementLocated(By.linkText('Favorites')), 1000).click();
 
     //click on casino
-    await driver.wait(until.elementLocated(By.linkText('MGM National Harbor Casino Resort')), 1000).click();
+    await driver.wait(until.elementLocated(By.linkText(casino)), 1000).click();
 
-    //find table of games and see what games current running
+    // setup body of text message to be sent
+
+    //find table of games and see what games current running, send text message if matching game exists
     await driver.findElements(By.css('#live-events > div > table > tbody > tr'))
         .then(elements => {
             elements.map(result => {
@@ -36,11 +38,22 @@ const test = async () => {
                             const last = infoArray.pop();
                             last === '1' ? infoArray.unshift(last + ' table of') : infoArray.unshift(last + ' tables of');
                             infoArray[infoArray.length - 1] = infoArray[infoArray.length - 1] + ' running';
-                            console.log(`${infoArray.join(' ')} \n`);
+                            info = infoArray.join(' ');
+                            for (let i = 0; i < stakes.length; i++) {
+                                if (info.includes(stakes[i])) {
+                                    client.messages.create({
+                                        to: process.env.MY_PHONE,
+                                        from: process.env.TWILIO_PHONE,
+                                        body: `${info} at ${casino}`
+                                    })
+                                    .then(message => console.log(message.sid));
+                                }
+                            }
                         }
-                });
-            })
-        });
+                        
+                    })
+            });
+        })
     
     
     // grab wait lists
@@ -53,16 +66,11 @@ const test = async () => {
                             const infoArray = text.split(' ');
                             const last = infoArray.pop()
                             infoArray.unshift(last + ' on the waiting list for');
-                            console.log(`${infoArray.join(' ')} \n`)
+                            // console.log(`${infoArray.join(' ')} \n`)
                         }
                     })
             })
         })
 }
 
-
-// #live-events > div > table > tbody > tr:nth-child(2)
-// #live-events > table > tbody > tr:nth-child(1)
-
-
-test();
+test('MGM National Harbor Casino Resort', ['10-25 NLH']);
